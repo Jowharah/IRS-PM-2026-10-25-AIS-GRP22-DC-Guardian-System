@@ -1,0 +1,46 @@
+﻿# DC-GUARDIAN verified integrated runtime dependencies
+#
+# Versions below reflect the known-good Windows/Python 3.12 integration
+# environment validated during the cleanup/code-quality-security baseline.
+# PyTorch is intentionally not pinned to the local CUDA build here because
+# CUDA-specific wheels depend on the installation platform/index.
+
+numpy==2.5.3
+pandas==3.0.6
+scikit-learn==1.9.1
+joblib==1.6.0
+
+tensorflow==2.21.0
+tf-keras==2.21.0
+deepface==0.0.101
+
+torch
+ultralytics==8.4.163
+
+neo4j==6.3.1
+jsonschema==4.26.0
+python-dotenv==1.2.3
+matplotlib==3.11.2
+
+# Response RAG source parsing
+pypdf==6.19.0
+beautifulsoup4==4.15.0
+
+# Response local embedding baseline
+sentence-transformers==5.7.0
+transformers==5.19.0
+
+# Response grounded reasoning provider
+openai==2.3.0
+
+
+# Presentation FastAPI backend (prototype)
+fastapi==0.143.0
+uvicorn==0.54.0
+
+# Presentation API contract tests
+pytest>=8,<10
+httpx>=0.27,<1
+
+# Multipart image upload parsing for PPE validation
+python-multipart>=0.0.20,<1

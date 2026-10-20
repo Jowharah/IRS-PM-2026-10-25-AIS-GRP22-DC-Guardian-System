@@ -1,0 +1,101 @@
+﻿"""Local contracts for the Specialist Agents Cybersecurity specialist."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
+
+from response.agents.specialists.base import SpecialistRequest  # noqa: E402
+from response.agents.specialists.cybersecurity import CybersecuritySpecialist  # noqa: E402
+
+
+EVIDENCE = [{
+    "chunk_id": "NIST:IR:1",
+    "document_id": "NIST-SP-800-61R3",
+    "title": "NIST SP 800-61 Rev. 3",
+    "authority_type": "GOVERNMENT_GUIDANCE",
+    "publisher": "NIST",
+    "version": "Rev. 3",
+    "pages": [20],
+    "text": "Incident response includes analysis and actions based on available evidence.",
+}]
+
+
+class SafeCyberProvider:
+    def reason(self, payload):
+        task = payload["task"]
+        required = (
+            "not proof of a confirmed attack",
+            "must not be called malicious activity",
+            "does not by itself prove compromise",
+        )
+        if not all(item in task for item in required):
+            raise AssertionError("Cybersecurity evidence-boundary instructions missing.")
+        return {
+            "assessment": (
+                "The supplied SSH evidence is a high-confidence anomaly signal, "
+                "not proof of confirmed compromise."
+            ),
+            "supported_findings": [
+                "Multiple frozen detector components voted anomalous."
+            ],
+            "recommended_considerations": [
+                "Review the supporting authentication evidence and affected asset context."
+            ],
+            "grounding_status": "SUPPORTED",
+            "citations": [{
+                "chunk_id": "NIST:IR:1",
+                "document_id": "NIST-SP-800-61R3",
+            }],
+            "limitations": [
+                "The supplied evidence does not establish successful compromise or attacker identity."
+            ],
+        }
+
+
+import pytest  # noqa: E402
+
+
+def test_ssh_anomaly_stays_evidence_not_a_confirmed_attack():
+    result = CybersecuritySpecialist(SafeCyberProvider()).assess(
+        SpecialistRequest(
+            incident_evidence={
+                "domain": "CYBERSECURITY",
+                "event_type": "SSH_ANOMALY_ASSESSMENT",
+                "evidence_state": "HIGH_CONFIDENCE_ANOMALY",
+                "detector_votes": 2,
+                "source_ip": "192.0.2.10",
+                "target_server": "SRV-B1-01",
+            },
+            retrieved_evidence=EVIDENCE,
+            task="Assess the SSH security evidence.",
+            domains=("CYBERSECURITY",),
+        )
+    )
+    assert result["grounding_status"] == "SUPPORTED"
+    text = " ".join([result["assessment"]] + result["supported_findings"] + result["limitations"]).lower()
+    assert "not proof" in text or "does not establish" in text, "Attack/compromise boundary was not preserved."
+
+
+def test_unsupported_domain_is_rejected():
+    with pytest.raises(ValueError):
+        CybersecuritySpecialist(SafeCyberProvider()).assess(
+            SpecialistRequest(incident_evidence={}, retrieved_evidence=[],
+                              task="Invalid domain test.", domains=("MAINTENANCE",)))
+
+
+def main():
+    test_ssh_anomaly_stays_evidence_not_a_confirmed_attack()
+    print("PASS: SSH anomaly remains evidence, not a confirmed attack.")
+    test_unsupported_domain_is_rejected()
+    print("PASS: Unsupported specialist domain rejected.")
+    print("=" * 60)
+    print("DC-GUARDIAN SPECIALIST AGENTS CYBERSECURITY SPECIALIST CONTRACT PASSED")
+    print("=" * 60)
+
+
+if __name__ == "__main__":
+    main()

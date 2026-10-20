@@ -1,0 +1,182 @@
+# DC-GUARDIAN — Reasoning under uncertainty (Bayesian correlation)
+
+**Updated:** 2026-10-13 (scenario set v2 results)  
+**Branch:** developed on `feature/uncertainty-reasoning` (from `bf37dba`), merged into `feature/presentation-dashboard` on 2026-10-11 and into `main` with PR #2  
+**Status:** research component with contract tests and an offline evaluation. Not yet wired into the dashboard, the Decision layer or Neo4j.
+
+## Why
+
+The frozen Reasoning rule is crisp: two abnormal events in different domains correlate when they share a declared zone and are at most 15 minutes apart. Real incidents are messier. A cooling fault can stress a drive 30–50 minutes later in another hall, and two strong alerts can share a zone by pure coincidence. A crisp rule cannot express "probably related" or explain why.
+
+This component estimates **P(Related)**, the probability that two abnormal events belong to the same incident, with a Bayesian network built from documented expert knowledge. It runs beside the crisp rule; it does not replace it.
+
+## Design
+
+```text
+Abnormal event pair
+   │
+   ├─ TimeGap          ≤5 min · ≤15 min · ≤60 min · >60 min
+   ├─ Topology         same server · same rack · same zone · cooling dependency · unrelated
+   ├─ DomainMechanism  known · possible · unlikely
+   └─ EvidenceStrength both strong · mixed · both weak
+   │
+   ▼
+Bayesian network (hidden cause "Related" → four observed factors)
+   │
+   ▼
+P(Related) + per-factor likelihood ratios (explanation)
+```
+
+| File | Role |
+|---|---|
+| `reasoning/uncertainty/knowledge_base.json` | All expert knowledge: prior, conditional probability tables, domain mechanisms, evidence-strength rules, cooling dependency. Each entry carries its rationale or source. |
+| `reasoning/uncertainty/bayesian_network.py` | Small dependency-free discrete Bayesian network with exact inference by enumeration. Missing factors are marginalized, never guessed. |
+| `reasoning/uncertainty/bayesian_correlation.py` | Feature extraction, `score_pair()` with explanation, and `crisp_correlated()` reproducing the frozen rule for comparison. |
+| `reasoning/uncertainty/scenarios/` | Builder and the 40 labelled scenarios. |
+| `reasoning/uncertainty/evaluate.py` | Evaluation; writes `results/evaluation_report.md` and `results/evaluation_results.json`. |
+| `reasoning/uncertainty/test_uncertainty_reasoning.py` | 15 contract tests, included in `check_all.py`. |
+
+### Knowledge acquisition
+
+Every number in the model is traceable to a stated source, which the knowledge base records next to it.
+
+| Knowledge | Source |
+|---|---|
+| Evidence strength per domain | Each detector's frozen evaluation: SSH two-of-three consensus precision 1.000 vs. single-vote candidates; maintenance probability ≥ 0.70 (operating threshold 0.45, holdout precision 3.4 %); dedicated sensors vs. hardware telemetry (existing Reasoning independence rule); graph-derived `UNAUTHORIZED` vs. `UNKNOWN_PERSON`; PPE confidence ≥ 0.75 (recall 0.524). |
+| Domain mechanisms | Data-center operations practice: heat → drive wear, unauthorized access → console attack, intruder → missing PPE (known); engineer visit, alarm response, tampering (possible); cyber with environmental, maintenance or safety (unlikely). |
+| Time and topology tables | "Related" rows: expert estimates. "Unrelated" rows: chance rates, following bin widths in a 120-minute window and the three-zone layout. |
+| Cooling dependency | Synthetic assumption: CHILLER-C1 in ZONE-C cools ZONE-A and ZONE-B. Declared in the knowledge base because the frozen DC-01 topology has no cooling-service relationship. |
+
+The network uses a naive-Bayes structure: the four factors are conditionally independent given "Related". This keeps every score explainable as a product of likelihood ratios:
+
+```latex
+\frac{P(R \mid f)}{P(\neg R \mid f)} = \frac{P(R)}{P(\neg R)} \prod_{i} \frac{P(f_i \mid R)}{P(f_i \mid \neg R)}
+```
+
+Example: a dedicated Hall A heat sensor and a high-risk drive in the same hall nine minutes apart score 0.90. Same zone (×1.6), ≤ 15 minutes (×3.75), known mechanism (×2.17) and both strong (×2.75) outweigh the 0.2 prior.
+
+### Boundaries
+
+The probability is the plausibility of a shared incident under an expert model. It does not establish causation, identity, presence or compromise, and it never changes detector Evidence, correlation records or Decision severity.
+
+## Labelled scenarios
+
+40 scenarios of the synthetic DC-01 data center, each a 120-minute window with 2–4 abnormal events (102 events, 85 cross-domain candidate pairs, 44 truly related). Every event carries a `ground_truth_incident` label written from the scenario narrative; `null` marks unrelated background abnormalities. The model never reads the label, and a test enforces that.
+
+Scenarios cover true incidents (cooling cascades, intrusions followed by console attacks, tailgaters without PPE, engineers dispatched to failing drives, fire and leak responses), coincidences (internet scanners, seasonal humidity, worn drives next to unrelated visitors), two simultaneous incidents in one hall, and hard cases where either method should fail.
+
+- **dev (16):** written first and used while writing the model code. While writing them, the author worked out the Bayesian score by hand for seven of them (D06, D07, D08, D12, D13, D15, D16) to check that they were informative cases. Dev results are therefore not independent of the model.
+- **test (24):** written afterwards without scoring them. **Cite the test split.**
+
+The knowledge base, scenarios and model code were committed (`c0b9dc3`) before the evaluation script and results (`22119f2`), and the knowledge base has not changed since. Both commits come from one working session three minutes apart, so the commit order shows only that the knowledge base was not changed after it was committed; it cannot show that no scenario was scored before that commit. Independent labelling (see Limitations) is the stronger safeguard.
+
+### Scenario set v2: only states the detector can produce (2026-10-13)
+
+The environmental detector measures temperature and humidity only: HIGH_TEMPERATURE above 35 °C, HIGH_HUMIDITY above 80 %, LOW_HUMIDITY below 20 %. Eight v1 scenarios use states it cannot produce:
+- WATER_LEAK_DETECTED: D14, T22;
+- SMOKE_DETECTED: D10, T12;
+- AIRFLOW_ANOMALY: D03, T09;
+- COOLING_ANOMALY: T02, T19.
+
+Five of these are in the test split. Operator decisions:
+- **v1 stays unchanged.** `labelled_scenarios.json` is pinned by a hash test, so published results remain reproducible.
+- **v2 (`labelled_scenarios_v2.json`, built by `scenarios/build_scenarios_v2.py`):**
+  - every environmental event carries a raw reading, and its state is what the frozen detector assigns (leak → high humidity; smoke, airflow and cooling → high temperature);
+  - narratives of the 8 rewritten scenarios describe readings, not relatedness;
+  - a test fails if any v2 environmental state is one the detector cannot produce. The producible states are found by running the detector over the measurement range.
+- **Full blind relabel (operator decision, 2026-10-13):** v2 ground truth comes only from the operator's blind labels for **all 40 scenarios**. No v1 label is copied, and until the labels exist every scenario is marked `PENDING_BLIND_RELABEL`.
+  - **Pack:** `labelling/pack_v2/`, built by `build_pack_v2.py`: same format as the v1 pack, readings shown, neutral IDs V01–V40, and a new order with no scenario in the same position as in the v1 pack. The v1 pack stays byte-identical.
+  - **From pairs to incidents:** the filled sheet (`labelling/results/operator-v2_labels.csv`) must cover all 85 pairs. Events joined by related pairs form one incident, and contradictory labels are refused, not guessed.
+  - **Pair labels only:** two same-domain events (for example two drives) share an incident only through a cross-domain event, because same-domain pairs are not labelled.
+  - **ChatGPT comparison:** redone on the same pack, pasted by the operator.
+  - **Not independent:** the operator also wrote v1, so the v2 labels are a blind relabel by the same author, not independent labels.
+- **Extended-sensor set (`extended_sensor_scenarios.json`):** the 8 original scenarios, verbatim with v1 labels, as future-work evidence of what leak, smoke and airflow sensors would add. Reported apart from the headline results.
+
+**Effect.** The Bayesian knowledge base treats every dedicated room sensor as strong evidence, and the domain pairs and times are unchanged, so the model's inputs are almost unchanged. The ground truth did change: the operator's blind relabel agrees with the v1 labels on 73% of pairs (kappa 0.46). The v1 results below stay the published reference; the v2 results are in [Results on scenario set v2](#results-on-scenario-set-v2-2026-10-13).
+
+## Results
+
+Regenerate with `python reasoning/uncertainty/evaluate.py`; the full per-pair table is in `reasoning/uncertainty/results/evaluation_report.md`.
+
+**Pair-level correlation, test split (59 pairs, 28 related):**
+
+| Method | Precision | Recall | F1 | False positives | Missed |
+|---|---:|---:|---:|---:|---:|
+| Crisp rule (frozen) | 0.615 | 0.571 | 0.593 | 10 | 12 |
+| Bayesian, P ≥ 0.5 | **0.792** | **0.679** | **0.731** | 5 | 9 |
+
+On the dev split the Bayesian model also leads (F1 0.706 vs 0.647), but some dev scenarios were scored by hand while being written, so that figure is not independent evidence. Across all 85 pairs: 0.721 vs 0.614. The Bayesian probability ranks pairs well without any threshold: test average precision 0.829, ROC-AUC 0.838.
+
+**Confidence intervals (test split).** Resampling whole scenarios (2,000 bootstrap draws; pairs in one scenario are not independent) gives 95% intervals of 0.375–0.788 for crisp F1 and 0.571–0.862 for Bayesian F1. The difference, Bayesian minus crisp, is **+0.022 to +0.261**, and Bayesian F1 is higher in 99.2% of resamples. The advantage is therefore unlikely to be noise on this test set, but its size is uncertain: anything from a marginal to a large gain is consistent with 24 scenarios.
+
+**Operator view, test split (18 incidents):**
+
+| Method | Alerts shown | Incidents fully linked | Linked cleanly |
+|---|---:|---:|---:|
+| Single-domain alerts | 65 | – | – |
+| Crisp rule | 44 | 11 | 10 |
+| Bayesian | 43 | 12 | 10 |
+
+Correlation of either kind cuts alerts by about a third against single-domain alerting. The Bayesian gain at operator level is small (one fewer alert, one more incident linked); its main benefit is fewer wrong links.
+
+**Robustness (test split):**
+
+- Removing any one factor drops F1 to 0.588–0.605, roughly the crisp level, so all four factors contribute.
+- Perturbing every probability with log-normal noise (σ 0.3, 200 draws) gives F1 median 0.704, 5th–95th percentile 0.578–0.815; 87 % of perturbed models still beat the crisp rule. The result does not hinge on the exact expert numbers.
+
+### Results on scenario set v2 (2026-10-13)
+
+Regenerate with `evaluate.py --set v2` (headline v2 labels: the operator's full blind relabel) and `evaluate.py --set v2-chatgpt` (sensitivity: ChatGPT's labels of the same pack as ground truth); reports in `reasoning/uncertainty/results/evaluation_report_v2*.md`. The knowledge base, model and thresholds are unchanged.
+
+**Test split (59 pairs), v1 and v2 side by side:**
+
+| Labels | Related pairs | Crisp F1 | Bayesian F1 | Bayesian − crisp F1, 95% interval | Bayesian AP | Perturbed models beating crisp |
+|---|---:|---:|---:|---|---:|---:|
+| v1, author (published) | 28 | 0.593 | 0.731 | +0.022 to +0.261 | 0.829 | 87% |
+| v2, operator blind relabel | 25 | 0.784 | 0.857 | **−0.040 to +0.190** | 0.919 | 48% |
+| v2, ChatGPT (sensitivity) | 13 | 0.615 | 0.703 | −0.067 to +0.229 | 0.799 | 62% |
+
+**Label agreement (all 85 pairs):** operator v2 vs v1 author labels 73% (kappa 0.46); ChatGPT v2 vs operator v2 73% (kappa 0.46; test split 80%, kappa 0.56). ChatGPT marks 22 pairs related against the operator's 43. Of the 23 disagreements, 22 are operator Y / ChatGPT N, and 10 of them are heat or humidity followed by a drive at risk: ChatGPT does not accept a SMART risk alert as evidence of heat damage. Where both were sure (confidence 3), they agree on 27 of 31 pairs.
+
+What this shows and what it does not:
+- **Both methods score higher on the v2 labels**, but the labels changed more than the scenarios did. The v2 labels come from the same author, written after discussing how the system links events (zones, timing), so the rise is not evidence that the model improved.
+- **The Bayesian advantage over the crisp rule is no longer clear.** Its point estimate stays positive under every labelling, but on both v2 labellings the 95% interval includes zero, and under the operator's v2 labels only 48% of perturbed models beat the crisp rule. Cite it as "positive but not significant on v2", not as an established gain.
+- **Correlation itself is robust.** Against isolated single-domain alerting, correlation cuts test alerts from 65 to 43–44 and links most incidents into one alert under all three labellings (see `docs/report/evaluation_baseline_and_latency.md`).
+- **The decisive judgement call** is whether heat or humidity plus a drive at risk is one incident. The knowledge base says yes (a "known" mechanism); ChatGPT says no. Independent human labels are needed to settle it.
+
+## What the errors show
+
+- **Long cooling cascades are still missed.** Chiller-to-drive links 33–55 minutes apart score 0.18–0.41 (T02, T09, T19, D03). The time table treats all long gaps alike, but cascades are slow by nature. A better structure would make TimeGap depend on Topology, which is a natural next step but was not tuned in, to keep the evaluation honest.
+- **Strong coincidences fool both methods.** An internet break-in and an unrelated worn drive on the same server two minutes apart score 0.92 (T13). Same-server, tight-time evidence outweighs the "unlikely" mechanism.
+- **Weak mechanisms can hide real links.** An intruder's missing PPE and their console attack score 0.49 (D16) because the safety–cyber pair is "unlikely". The incident is still linked as one group through the face event, which is why the group-level view matters.
+- **Two strong concurrent incidents in one hall fool both methods.** In D09 every cross-incident pair scores 0.69–0.90, because the events are strong, close in time and in the same hall.
+- **The Bayesian model removes crisp false positives** where weak or implausible pairs share a zone (D06, D15, T05, T23 and most of T08). One weak pair still passes: a visitor and a scanner three minutes apart score 0.71 (T18) because their mechanism is "known". It also recovers incidents that unfold over 16–40 minutes in one hall (D08, D14, T10, T15).
+
+## Limitations
+
+- **Author-labelled scenarios.** The same author wrote the knowledge base and the scenarios, so there is a risk of shared assumptions. Seven dev scenarios were also scored by hand while being written. Unscored test scenarios, the unchanged knowledge base and the sensitivity analysis reduce but do not remove this risk. The planned independent labelling round was dropped for time (2026-10-21): the operator's blind v2 relabel removes the narratives' influence but is by the same author, and ChatGPT's labels are a second opinion, not independent validation. Independent labelling remains the main future-work item.
+- **Small sample.** 59 test pairs in 24 scenarios; the bootstrap intervals above are wide, so the size of the gain is uncertain.
+- **Synthetic setting.** One three-zone topology and an assumed cooling dependency; no real multi-domain data exists for the project.
+- **Naive structure.** Conditional independence of the four factors is a simplification (time and topology interact in cascades, as shown above).
+- **Fixed threshold.** 0.5 was set in the knowledge base in advance; a deployment would choose it from the cost of a missed incident versus a false link.
+- **Offline only.** Not yet connected to Neo4j, the presentation backend or the Decision rules.
+
+## Independent labelling
+
+**Status (2026-10-21): no independent round was run, for time.** The results rely on the operator's blind relabel (v2) and the ChatGPT second opinion. The tooling below stays for future work.
+
+`reasoning/uncertainty/labelling/` contains a **blind labelling pack** for an independent labeller: the 40 scenarios with neutral IDs and shuffled order, events only (no titles, narratives, labels, split or model output), a facility brief and a glossary, and a `labels.csv` with the 85 candidate pairs to mark related or not. `score_labels.py` reports agreement with the author (percent and Cohen's kappa) and re-evaluates both methods on the independent labels with bootstrap intervals; a contract test checks the pack reveals no answers. See the folder's README for the procedure.
+
+### LLM rater (ChatGPT), 2026-10-11
+
+ChatGPT labelled the blind pack (`labelling/results/llm-chatgpt.md`). Test split: 78% agreement with the author, Cohen's kappa 0.55; against its labels crisp F1 0.596 (0.40–0.77) and Bayesian F1 0.756 (0.61–0.86), difference +0.03 to +0.29. The ranking and gap match the author-label result. **This is not independent human validation:** its labels follow a fixed rule (cross-zone always N, including chiller-to-hall cascades despite the stated cooling dependency; same-zone Y only for the three domain pairs the knowledge base marks as known mechanisms), so agreement with the Bayesian model is partly circular. Its disagreements with the author highlight the judgement calls (S17 same-server cyber + drive; S22, S30 and S15 context cases) that human labellers should settle.
+
+### Scenario set v2: operator relabel and ChatGPT, 2026-10-13
+
+Both labelled `labelling/pack_v2/` blind: the operator (`results/operator-v2_labels.csv`) and ChatGPT (`results/llm-chatgpt-v2_labels.csv`, pasted by the operator; no API call). `score_labels.py --pack v2` scores a labeller against the operator's v2 labels and also against the v1 author labels (`results/operator-v2.md`, `results/llm-chatgpt-v2.md`; the operator file's 100% self-agreement is by construction, its useful figure is the 73% agreement with v1). Results and their reading are under [Results on scenario set v2](#results-on-scenario-set-v2-2026-10-13). Neither is independent human validation: the operator wrote v1 and the knowledge base, and ChatGPT is a language model's second opinion.
+
+## Integration path
+
+1. **Done (2026-10-11):** `presentation/backend/app/correlation_uncertainty.py` scores every live pair returned by `GET /api/v1/correlations/pairs` and the dashboard shows P(Related) with its factor explanation beside each pair, labelled a research estimate. Factors that live Evidence cannot supply (PPE confidence) are marginalized, not guessed; pairs with a non-abnormal event are reported as not scored.
+2. Keep the crisp rule as the authoritative candidate filter until the probabilistic score has been validated on independently labelled data.
+3. Never feed P(Related) into Decision severity without a new, versioned Decision policy.

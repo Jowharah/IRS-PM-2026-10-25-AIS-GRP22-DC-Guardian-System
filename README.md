@@ -1,125 +1,104 @@
-﻿### [ Practice Module ] Project Submission Template: Github Repository & Zip File
-
-**[ Naming Convention ]** CourseCode-StartDate-BatchCode-TeamName-ProjectName.zip
-
-* **[ MTech Thru-Train Group Project Naming Example ]** IRS-PM-2020-01-18-IS02PT-GRP-AwsomeSG-HDB_BTO_Recommender.zip
-
-* **[ MTech Stackable Group Project Naming Example ]** IRS-PM-2020-01-18-STK02-GRP-AwsomeSG-HDB_BTO_Recommender.zip
-
-[Online editor for this README.md markdown file](https://pandao.github.io/editor.md/en.html "pandao")
-
----
-
-### <<<<<<<<<<<<<<<<<<<< Start of Template >>>>>>>>>>>>>>>>>>>>
-
----
-
 ## SECTION 1 : PROJECT TITLE
-## Singapore Housing & Deveoplment Board - BTO Recommender System
+## DC-GUARDIAN: Multi-Domain Reasoning for Data-Center Security, Safety and Operations
 
-<img src="SystemCode/clips/static/hdb-bto.png"
-     style="float: left; margin-right: 0px;" />
+Practice Module Group 22 · Graduate Certificate in Intelligent Reasoning Systems, NUS-ISS
+
+<img src="SystemCode/logo/dc-guardian-mark-256.png" alt="DC-GUARDIAN" width="160" />
 
 ---
 
 ## SECTION 2 : EXECUTIVE SUMMARY / PAPER ABSTRACT
-Singapore ranks amongst countries with the highest population density in the world. In a bid to have firm control over long term urban planning, the Singapore government came up with the “Built to Order” (abbreviated BTO) initiative back in 2001. These are new Housing Development Board (HDB) flats tightly controlled by their eligibility and quantity released every year. In more recent years, the modern BTO scheme in Singapore requires a waiting period of 3-4 years, and is generally targeted at young Singaporean couples looking to purchase their first property and set up a family. Nationality and income ceilings are some of the broad filters that determine one’s eligibility for the highly sought after projects. 
 
+Data-centre operations teams watch separate tools for cyber security, physical access, worker safety, equipment health and room conditions. Each tool raises its own alerts, so an incident that spans several domains reaches the operator as unrelated fragments, and real incidents are buried among false alarms.
 
-Our team, comprising of 6 young Singaporeans, all hope to be property owners one day. Many of our peers opt for BTO flats due to their affordability, existence of financial aid from the government, as well as their resale value. However, there often exists a knowledge gap for these young couples during the decision making process and they end up making potentially regretful decisions. We would like to bridge this knowledge gap, and have hence chosen to base our project on creating a recommender system for BTO flats, utilizing the data from recent launches in Tampines, Eunos, Sengkang and Punggol. 
+DC-GUARDIAN is an intelligent reasoning system that combines these domains. Five detectors produce Evidence:
+- SSH log anomalies (rules plus Isolation Forest and an autoencoder);
+- PPE compliance in camera images (YOLOv8);
+- face recognition with zone authorisation (ArcFace);
+- 7-day drive-failure risk (a temporal Random Forest);
+- room temperature and humidity thresholds.
 
+The Evidence is mapped onto a Neo4j knowledge graph of a synthetic data centre (zones, racks, servers, sensors, cameras, staff and their authorised zones). Deterministic rules then correlate results that share place and time, and a Bayesian network estimates how likely two results are to be related. Severity comes only from fixed, versioned Decision rules: a group's severity is its most severe member, raised one level only when the members show a known mechanism.
 
-Using the techniques imparted to us in lectures, our group first set out to build a sizeable knowledge base via conducting an interview and administering a survey. While building the system, we utilized tools such as Java to scrape real time data from HDB website and transform it into a database, CLIPS to synthesize the rule based reasoning process, and Python to integrate it into an easy to use UI for the everyday user. To add icing on the cake, we even hosted the system on a website so that the everyday user can access it through the click of a link.
+Specialist agents and an AI Investigator explain the Evidence using retrieval over approved public guidance (NIST, CISA, OSHA, U.S. DOE). They are grounded and citation-checked, with a post-generation check for unsupported claims, and they never assign severity or act. Every result goes to human review, with audited verdicts and an investigation workflow.
 
+**Experiments** (24 held-out labelled scenarios; detectors on locked public test sets):
+- **Against isolated single-domain monitoring:** correlation cuts the alerts an operator sees from 65 to 44 (−21, 95% CI −29 to −14) and shows 14 of 18 incidents whole in one alert (0 of 18 when isolated). Every HIGH alert is a real incident, and the review queue's average precision rises from 0.73 to 0.81 (+0.08, 95% CI +0.02 to +0.19).
+- **Bayesian correlation:** F1 0.86 against 0.78 for the crisp rule. The interval includes zero, so the Bayesian score is shown for information only and does not drive decisions.
+- **Detectors and grounding:** PPE detection was improved and tested on two further datasets. Retrieval Recall@3 is 96.1%. A post-generation judge caught 4 of 5 overclaims.
+- **Speed:** persistent inference workers cut uploads from 7–18 s to 0.6–3.1 s.
+- **Usability:** a study with participants outside the team. _(results to add)_
+- **Limitations:** the scenarios and topology are synthetic, and the labels come from the project team; a ChatGPT labelling of the same blind pack was used only as a sensitivity check. The system has not been deployed on real facility data.
 
-Our team had an amazing time working on this project, and hope to share our insights with everyone. Despite a focus on BTO flats, we would recommend it for everybody interested in understanding property market trends for residence or investment purposes. There truly are a wide array of factors behind the decision to invest in a property, and we only wish there was more time to work on the scope and scale of the project. 
+The system runs on one workstation with a React dashboard and a FastAPI backend, and does not need a GPU.
 
 ---
 
 ## SECTION 3 : CREDITS / PROJECT CONTRIBUTION
 
-| Official Full Name  | Student ID (MTech Applicable)  | Work Items (Who Did What) | Email (Optional) |
+| Official Full Name | Student ID (Matriculation) | Work Items (Who Did What) | Email (Optional) |
 | :------------ |:---------------:| :-----| :-----|
-| Desmond Chua | A1234567A | xxxxxxxxxx yyyyyyyyyy zzzzzzzzzz| A1234567A@nus.edu.sg |
-| Chang Ye Han | A1234567B | xxxxxxxxxx yyyyyyyyyy zzzzzzzzzz| A1234567B@gmail.com |
-| Chee Jia Wei | A1234567C | xxxxxxxxxx yyyyyyyyyy zzzzzzzzzz| A1234567C@outlook.com |
-| Ganesh Kumar | A1234567D | xxxxxxxxxx yyyyyyyyyy zzzzzzzzzz| A1234567D@yahoo.com |
-| Jeanette Lim | A1234567E | xxxxxxxxxx yyyyyyyyyy zzzzzzzzzz| A1234567E@qq.com |
+| AL AJMI ALJAWHARAH MOHAMMAD H | A0356913X | _(contributions)_ | |
+| ALOTAIBI MARAM MUGAAD M | A0355452A | _(contributions)_ | |
+| ALSHAKHS MAI ZAID M | A0354315J | _(contributions)_ | |
+| ALSHAMMARY NORAH MOHAMMED H | A0354356Y | _(contributions)_ | |
 
 ---
 
 ## SECTION 4 : VIDEO OF SYSTEM MODELLING & USE CASE DEMO
 
-[![Sudoku AI Solver](http://img.youtube.com/vi/-AiYLUjP6o8/0.jpg)](https://youtu.be/-AiYLUjP6o8 "Sudoku AI Solver")
-
-Note: It is not mandatory for every project member to appear in video presentation; Presentation by one project member is acceptable. 
-More reference video presentations [here](https://telescopeuser.wordpress.com/2018/03/31/master-of-technology-solution-know-how-video-index-2/ "video presentations")
+- Business video (promotion, business value, use case, pricing): _(link to `Video/` file or YouTube)_
+- Technical video (system design, technical explanation of use cases): _(link)_
 
 ---
 
 ## SECTION 5 : USER GUIDE
 
-`Refer to appendix <Installation & User Guide> in project report at Github Folder: ProjectReport`
+Full guide: [SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md](SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md), also the report appendix.
 
-### [ 1 ] To run the system using iss-vm
+**Requirements:**
+- Windows 10/11 (tested on Windows 11), 16 GB RAM, 15 GB free disk;
+- Git with **Git LFS**, Python 3.12, Node.js 20+;
+- Neo4j (tested with 2026.08, for example in Neo4j Desktop);
+- optional: an NVIDIA GPU (faster PPE checks), an OpenAI API key (AI Investigator and specialists). No GPU is needed.
 
-> download pre-built virtual machine from http://bit.ly/iss-vm
+**Install and run.** Use `git clone`, not "Download ZIP": the ZIP leaves out the 318 MB drive-failure model stored in Git LFS.
 
-> start iss-vm
+```powershell
+git lfs install
+git clone https://github.com/Jowharah/IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-System.git
+cd IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-System\SystemCode
+git lfs pull
+powershell -ExecutionPolicy Bypass -File setup.ps1     # asks for your Neo4j password and a dashboard password
 
-> open terminal in iss-vm
+# then, in two terminals (inside SystemCode):
+.venv-dc-guardian\Scripts\python.exe -m uvicorn presentation.backend.app.main:app --host 127.0.0.1 --port 8000
+cd presentation\frontend; npm run dev                    # open http://localhost:5173, user: operator
+```
 
-> $ git clone https://github.com/telescopeuser/Workshop-Project-Submission-Template.git
-
-> $ source activate iss-env-py2
-
-> (iss-env-py2) $ cd Workshop-Project-Submission-Template/SystemCode/clips
-
-> (iss-env-py2) $ python app.py
-
-> **Go to URL using web browser** http://0.0.0.0:5000 or http://127.0.0.1:5000
-
-### [ 2 ] To run the system in other/local machine:
-### Install additional necessary libraries. This application works in python 2 only.
-
-> $ sudo apt-get install python-clips clips build-essential libssl-dev libffi-dev python-dev python-pip
-
-> $ pip install pyclips flask flask-socketio eventlet simplejson pandas
+Setup loads demo data, so the dashboard shows results straight away. Use **Scenario Lab** to add your own camera images, SSH logs, drive histories or sensor readings.
 
 ---
+
 ## SECTION 6 : PROJECT REPORT / PAPER
 
-`Refer to project report at Github Folder: ProjectReport`
+[ProjectReport/](ProjectReport/): group report (business case and market research, system design, implementation, experiments, findings and discussion). Its appendices are the project proposal, the mapping of system functions to MR / RS / CGS course techniques, and the installation and user guide.
 
-**Recommended Sections for Project Report / Paper:**
-- Executive Summary / Paper Abstract
-- Sponsor Company Introduction (if applicable)
-- Business Problem Background
-- Market Research
-- Project Objectives & Success Measurements
-- Project Solution (To detail domain modelling & system design.)
-- Project Implementation (To detail system development & testing approach.)
-- Project Performance & Validation (To prove project objectives are met.)
-- Project Conclusions: Findings & Recommendation
-- Appendix of report: Project Proposal
-- Appendix of report: Mapped System Functionalities against knowledge, techniques and skills of modular courses: MR, RS, CGS
-- Appendix of report: Installation and User Guide
-- Appendix of report: 1-2 pages individual project report per project member, including: Individual reflection of project journey: (1) personal contribution to group project (2) what learnt is most useful for you (3) how you can apply the knowledge and skills in other situations or your workplaces
-- Appendix of report: List of Abbreviations (if applicable)
-- Appendix of report: References (if applicable)
+**Technique groups demonstrated (three or more required):**
+
+| Technique group | In DC-GUARDIAN |
+|---|---|
+| Decision automation: business rules and knowledge-based reasoning | Versioned deterministic Decision rules (DCG-DECISION-v1/v2); investigation workflow; correlation rules over the knowledge graph |
+| Knowledge discovery and data mining | Five ML detectors (YOLOv8 PPE, ArcFace, Isolation Forest + autoencoder SSH, temporal Random Forest drives); Bayesian correlation network; RAG retrieval |
+| Cognitive systems | Neo4j knowledge graph of the data centre; computer vision (PPE, face); AI Investigator and specialist agents answering in natural language with citations |
 
 ---
+
 ## SECTION 7 : MISCELLANEOUS
 
-`Refer to Github Folder: Miscellaneous`
-
-### HDB_BTO_SURVEY.xlsx
-* Results of survey
-* Insights derived, which were subsequently used in our system
-
----
-
-### <<<<<<<<<<<<<<<<<<<< End of Template >>>>>>>>>>>>>>>>>>>>
+- [Miscellaneous/](Miscellaneous/): pointers to the usability study kit, datasets and citations, the Bayesian study and the evaluation.
+- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `6f1ddda`.
+- Datasets and licences: [SystemCode/docs/DATASETS_AND_CITATIONS.md](SystemCode/docs/DATASETS_AND_CITATIONS.md). Academic, non-commercial use; PPE models trained on SH17 (CC BY-NC-SA 4.0).
 
 ---
 
