@@ -62,7 +62,7 @@ Full guide: [SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md](SystemCode/docs/INS
 - Neo4j (tested with 2026.08, for example in Neo4j Desktop);
 - optional: an NVIDIA GPU (faster PPE checks), an OpenAI API key (AI Investigator and specialists). No GPU is needed.
 
-**Install and run.** Use `git clone`, not "Download ZIP": the ZIP leaves out the 318 MB drive-failure model stored in Git LFS.
+**Install and run.** `git clone` is recommended. From a ZIP download, check that `SystemCode/evidence/predictive_maintenance/models/rf/temporal_rf_v2.joblib` is about 300 MB; if it is a small text file, the Git LFS model is missing, so clone instead (`setup.ps1` stops with this message too).
 
 ```powershell
 git lfs install
