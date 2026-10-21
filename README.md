@@ -47,14 +47,18 @@ The system runs on one workstation with a React dashboard and a FastAPI backend,
 
 ## SECTION 4 : VIDEO OF SYSTEM MODELLING & USE CASE DEMO
 
-- Business video (promotion, business value, use case, pricing): _(link to `Video/` file or YouTube)_
-- Technical video (system design, technical explanation of use cases): _(link)_
+| Video | Content | Watch | File |
+|---|---|---|---|
+| Business video | Promotion, business value, use case, pricing | <https://youtu.be/JWnmUqcCJec> | [Video/IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-Business-Video.mp4](Video/IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-Business-Video.mp4) |
+| Technical (system) video | System design, technical explanation of the use cases | <https://youtu.be/R0BzQ-qcffk> | [Video/IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-System-Video.mp4](Video/IRS-PM-2026-10-25-AIS-GRP22-DC-Guardian-System-Video.mp4) |
+
+[![DC-GUARDIAN business video](https://img.youtube.com/vi/JWnmUqcCJec/mqdefault.jpg)](https://youtu.be/JWnmUqcCJec) [![DC-GUARDIAN system video](https://img.youtube.com/vi/R0BzQ-qcffk/mqdefault.jpg)](https://youtu.be/R0BzQ-qcffk)
 
 ---
 
 ## SECTION 5 : USER GUIDE
 
-Full guide: [SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md](SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md), also the report appendix.
+Full guide: [ProjectReport/DC-Guardian_Installation_and_User_Guide.pdf](ProjectReport/DC-Guardian_Installation_and_User_Guide.pdf) (source: [SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md](SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md)), also the report appendix.
 
 **Requirements:**
 - Windows 10/11 (tested on Windows 11), 16 GB RAM, 15 GB free disk;
@@ -97,5 +101,5 @@ Setup loads demo data, so the dashboard shows results straight away. Use **Scena
 ## SECTION 7 : MISCELLANEOUS
 
 - [Miscellaneous/](Miscellaneous/): pointers to the usability study kit, datasets and citations, the Bayesian study and the evaluation.
-- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `a530715`.
+- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `9013638`.
 - Datasets and licences: [SystemCode/docs/DATASETS_AND_CITATIONS.md](SystemCode/docs/DATASETS_AND_CITATIONS.md). Academic, non-commercial use; PPE models trained on SH17 (CC BY-NC-SA 4.0).
