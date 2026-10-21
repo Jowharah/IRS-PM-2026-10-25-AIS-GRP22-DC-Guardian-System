@@ -38,7 +38,7 @@ The system runs on one workstation with a React dashboard and a FastAPI backend,
 
 | Official Full Name | Student ID (Matriculation) | Work Items (Who Did What) | Email (Optional) |
 | :------------ |:---------------:| :-----| :-----|
-| AL AJMI ALJAWHARAH MOHAMMAD H | A0356913X | _(contributions)_ | |
+| AL AJMI ALJAWHARAH MOHAMMAD H | A0356913X | **Group leader.** Project coordination, technical priorities and task distribution; system architecture, integration and quality assurance. **Repository and integration:** set up the GitHub repository and the integration, test and demo workstation; converted teammates' notebook models into Python modules; code review, CI and dependency management. **Evidence:** SSH cybersecurity anomaly detector (rules + Isolation Forest + autoencoder; source-IP 5-minute behavioural windows). **Reasoning:** Common Event Schema; Neo4j knowledge-graph integration and correlation review (with teammates). **Application:** architecture and review of the FastAPI backend and React dashboard; integration of RAG, specialist agents and AI Investigator; human review and audit workflow. **Quality:** end-to-end testing, security and dependency checks, performance optimisation; demo and usability-test preparation. **Report:** Sections 5 and 6; contributed to Sections 7 and 8. | |
 | ALOTAIBI MARAM MUGAAD M | A0355452A | _(contributions)_ | |
 | ALSHAKHS MAI ZAID M | A0354315J | _(contributions)_ | |
 | ALSHAMMARY NORAH MOHAMMED H | A0354356Y | _(contributions)_ | |
