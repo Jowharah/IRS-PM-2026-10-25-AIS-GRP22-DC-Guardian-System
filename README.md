@@ -62,7 +62,7 @@ Full guide: [SystemCode/docs/INSTALLATION_AND_USER_GUIDE.md](SystemCode/docs/INS
 - Neo4j (tested with 2026.08, for example in Neo4j Desktop);
 - optional: an NVIDIA GPU (faster PPE checks), an OpenAI API key (AI Investigator and specialists). No GPU is needed.
 
-**Install and run.** `git clone` is recommended. From a ZIP download, check that `SystemCode/evidence/predictive_maintenance/models/rf/temporal_rf_v2.joblib` is about 300 MB; if it is a small text file, the Git LFS model is missing, so clone instead (`setup.ps1` stops with this message too).
+**Install and run.** `git clone` is recommended. From a ZIP download, check that `SystemCode/evidence/predictive_maintenance/models/rf/temporal_rf_v2.joblib` is about 300 MB; if it is a small text file, the Git LFS model is missing, so clone instead (`setup.ps1` checks this and stops with a message).
 
 ```powershell
 git lfs install
@@ -97,7 +97,7 @@ Setup loads demo data, so the dashboard shows results straight away. Use **Scena
 ## SECTION 7 : MISCELLANEOUS
 
 - [Miscellaneous/](Miscellaneous/): pointers to the usability study kit, datasets and citations, the Bayesian study and the evaluation.
-- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `97f9f25`.
+- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `a530715`.
 - Datasets and licences: [SystemCode/docs/DATASETS_AND_CITATIONS.md](SystemCode/docs/DATASETS_AND_CITATIONS.md). Academic, non-commercial use; PPE models trained on SH17 (CC BY-NC-SA 4.0).
 
 ---
