@@ -27,7 +27,12 @@ Specialist agents and an AI Investigator explain the Evidence using retrieval ov
 - **Bayesian correlation:** F1 0.86 against 0.78 for the crisp rule. The interval includes zero, so the Bayesian score is shown for information only and does not drive decisions.
 - **Detectors and grounding:** PPE detection was improved and tested on two further datasets. Retrieval Recall@3 is 96.1%. A post-generation judge caught 4 of 5 overclaims.
 - **Speed:** persistent inference workers cut uploads from 7–18 s to 0.6–3.1 s.
-- **Usability:** a study with participants outside the team. _(results to add)_
+- **Usability (3 participants outside the team):**
+  - core tasks mostly completed (T1, T4–T7: 100%; T2: 83%). T3, *why were these grouped*, scored 50%: no participant found that grouping is not proof of cause.
+  - SUS mean 60.8 (40.0 to 87.5).
+  - Concept check 2.3 of 6; none knew that fixed rules set severity.
+  - Participants would trust it to prioritise (4.3 of 5) but not to decide (2.0).
+  - The dashboard was changed in response (summaries first, simpler views, status tabs, clearer wording) and not yet re-tested. See `SystemCode/docs/usability_study/findings_2026-10.md`.
 - **Limitations:** the scenarios and topology are synthetic, and the labels come from the project team; a ChatGPT labelling of the same blind pack was used only as a sensitivity check. The system has not been deployed on real facility data.
 
 The system runs on one workstation with a React dashboard and a FastAPI backend, and does not need a GPU.
@@ -38,10 +43,10 @@ The system runs on one workstation with a React dashboard and a FastAPI backend,
 
 | Official Full Name | Student ID (Matriculation) | Work Items (Who Did What) |
 | :------------ | :---------------: | :----- |
-| AL AJMI ALJAWHARAH MOHAMMAD H | A0356913X | **Group leader.** Project coordination, technical priorities and task distribution; system architecture, integration and quality assurance. **Repository and integration:** set up the GitHub repository and the integration, test and demo workstation; converted teammates' notebook models into Python modules; code review, CI and dependency management. **Evidence:** SSH cybersecurity anomaly detector (rules + Isolation Forest + autoencoder; source-IP 5-minute behavioural windows). **Reasoning:** Common Event Schema; Neo4j knowledge-graph integration and correlation review (with teammates). **Application:** architecture and review of the FastAPI backend and React dashboard; integration of RAG, specialist agents and AI Investigator; human review and audit workflow. **Quality:** end-to-end testing, security and dependency checks, performance optimisation; demo and usability-test preparation. **Report:** Sections 5 and 6; contributed to Sections 7 and 8. |
-| ALOTAIBI MARAM MUGAAD M | A0355452A | _(contributions)_ |
-| ALSHAKHS MAI ZAID M | A0354315J | _(contributions)_ |
-| ALSHAMMARY NORAH MOHAMMED H | A0354356Y | _(contributions)_ |
+| AL AJMI ALJAWHARAH MOHAMMAD H | A0356913X | **Group leader and technical integration lead:** task allocation and system architecture across the five domains; GitHub repository, continuous integration, conversion of teammates' notebooks into Python modules, and the integration workstation. **SSH anomaly detector** (rules, Isolation Forest, autoencoder). Common Event Schema, cross-domain correlation and Neo4j integration. Oversaw the FastAPI backend and React dashboard, RAG and agent integration, human review and audit. **Quality assurance:** end-to-end testing, security and dependency checks, performance. Usability testing; report Sections 5–8. |
+| ALOTAIBI MARAM MUGAAD M | A0355452A | **PPE compliance detector** (YOLOv8): detecting protective equipment and assessing worker compliance. Contributed to the **RAG system and the customized AI agents** for evidence interpretation. **Literature review and market research** for the project proposal. |
+| ALSHAKHS MAI ZAID M | A0354315J | **Face recognition** (RetinaFace detection, ArcFace embeddings) as identity evidence for the reasoning pipeline, with a controlled test set, separate known and unknown evaluation, and biometric data kept out of version control. Three **literature reviews**; defined the **project scope** (five evidence domains, six reasoning techniques) and its constraints. |
+| ALSHAMMARY NORAH MOHAMMED H | A0354356Y | **Predictive maintenance:** hard-drive failure prediction on Backblaze SMART data (failure labelling, censoring, class imbalance, temporal features); compared Isolation Forest, Random Forest and GRU, sampling and thresholds; Temporal Random Forest ROC-AUC 0.872, 323 of 667 failing drives caught. Maintenance-risk assessments for Neo4j, Bayesian reasoning, RAG and the Operations agent. **Introduction and market context** sections. |
 
 ---
 
