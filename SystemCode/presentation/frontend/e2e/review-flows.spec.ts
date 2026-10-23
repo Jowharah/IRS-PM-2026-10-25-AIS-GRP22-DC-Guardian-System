@@ -28,13 +28,15 @@ test("operator overrides a PPE result and it shows as human verified", async ({p
   await page.getByText("I confirm this is my own review of this Evidence.").click();
   await record.click();
 
-  await expect(page.getByText("Verdict recorded in the audit chain")).toBeVisible();
+  await expect(page.getByText(/Verdict saved/)).toBeVisible();
   await expect(page.getByText("Overridden → Compliant")).toBeVisible();
   const post = state.requests.find(r => r.method === "POST" && r.path === `/api/v1/evidence-reviews/ppe/${PPE_ID}`);
   expect(post?.body).toMatchObject({verdict: "OVERRIDDEN", corrected_status: "COMPLIANT", acknowledgment: true});
 
   // The queue and Monitoring Center reflect the override; the detector result stays visible.
-  await expect(item.getByText("HUMAN OVERRIDDEN")).toBeVisible({timeout: 10_000});
+  // A recorded verdict moves the item from "To do" to "Completed", tagged with the outcome.
+  await page.getByRole("tab", {name: /Completed/}).click();
+  await expect(item.locator(".statusTag")).toHaveText("Human override", {timeout: 10_000});
   await page.getByRole("button", {name: /Monitoring Center/}).first().click();
   await expect(page.getByText("COMPLIANT · HUMAN VERIFIED")).toBeVisible({timeout: 10_000});
   // Opening the overridden image must not crash the page (regression: the detail has no top-level status).
@@ -120,12 +122,12 @@ test("monitoring summary counts what needs attention and filters the feed", asyn
 
   await attention.click();
   await expect(page.getByText("Showing:")).toContainText("Items needing attention");
-  await expect(page.locator("button.feedRow", {hasText: "Unified correlation"})).toBeVisible();
+  await expect(page.locator("button.feedRow", {hasText: "Correlated group"})).toBeVisible();
   await page.getByRole("button", {name: "Show all"}).click();
   await expect(page.getByText("Showing:")).toHaveCount(0);
 
   await page.locator(".domainChip", {hasText: "Maintenance"}).click();
-  await expect(page.locator("button.feedRow", {hasText: "Unified correlation"})).toHaveCount(0);
+  await expect(page.locator("button.feedRow", {hasText: "Correlated group"})).toHaveCount(0);
 });
 
 test("v2 Decisions show on single events and groups, and the severity filter uses them", async ({page}) => {
@@ -133,16 +135,17 @@ test("v2 Decisions show on single events and groups, and the severity filter use
   await signIn(page);
   const ppeRow = page.locator("button.feedRow", {hasText: PPE_ID});
   await expect(ppeRow.locator(".severity-low")).toHaveText("LOW");
-  await expect(page.locator("button.feedRow", {hasText: "Unified correlation"})).toContainText("HIGH · LINKED");
+  await expect(page.locator("button.feedRow", {hasText: "Correlated group"})).toContainText("HIGH · LINKED");
   await expect(page.locator(".summaryCard", {hasText: "Decisions"}).last()).toContainText("HIGH 1");
 
   await page.getByLabel("Filter incidents").selectOption("LOW");
   await expect(ppeRow).toBeVisible();
-  await expect(page.locator("button.feedRow", {hasText: "Unified correlation"})).toHaveCount(0);
+  await expect(page.locator("button.feedRow", {hasText: "Correlated group"})).toHaveCount(0);
   await page.getByLabel("Filter incidents").selectOption("ALL");
 
-  await page.locator("button.feedRow", {hasText: "Unified correlation"}).click();
-  await expect(page.getByText("Group Decision · DCG-DECISION-v2")).toBeVisible();
+  await page.locator("button.feedRow", {hasText: "Correlated group"}).click();
+  await expect(page.getByText("Rule-based Decision · DCG-DECISION-v2")).toBeVisible();
+  await page.getByRole("button", {name: "Full detail"}).click();
   await expect(page.getByText(/Unified Decision: HIGH · DCG-DECISION-v2 · validated on the author's labels only/)).toBeVisible();
 });
 
@@ -196,5 +199,5 @@ test("a record listed in Analytics or the Review Queue opens in the Monitoring C
   await page.getByRole("button", {name: /Human Review Queue/}).click();
   const group = page.locator("article.reviewRecord", {hasText: GROUP_ID});
   await group.getByRole("button", {name: "View in Monitoring Center"}).click();
-  await expect(page.getByText(/Unified Multi-Domain Correlation Candidate/)).toBeVisible();
+  await expect(page.getByText(/Correlated group · multiple domains/)).toBeVisible();
 });
