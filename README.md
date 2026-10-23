@@ -69,7 +69,7 @@ Full guide: [ProjectReport/DC-Guardian_Installation_and_User_Guide.pdf](ProjectR
 - Windows 10/11 (tested on Windows 11), 16 GB RAM, 15 GB free disk;
 - Git with **Git LFS**, Python 3.12, Node.js 20+;
 - Neo4j (tested with 2026.08, for example in Neo4j Desktop);
-- optional: an NVIDIA GPU (faster PPE checks), an OpenAI API key (AI Investigator and specialists). No GPU is needed.
+- optional: an NVIDIA GPU (faster PPE checks), an OpenAI API key (AI Investigator, specialists, and the Decisions for SSH events and drive + temperature pairs; see the guide). No GPU is needed.
 
 **Install and run.** `git clone` is recommended. From a ZIP download, check that `SystemCode/evidence/predictive_maintenance/models/rf/temporal_rf_v2.joblib` is about 300 MB; if it is a small text file, the Git LFS model is missing, so clone instead (`setup.ps1` checks this and stops with a message).
 
@@ -106,5 +106,5 @@ Setup loads demo data, so the dashboard shows results straight away. Use **Scena
 ## SECTION 7 : MISCELLANEOUS
 
 - [Miscellaneous/](Miscellaneous/): pointers to the usability study kit, datasets and citations, the Bayesian study and the evaluation.
-- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `2f5d2c0`.
+- Full development history (pull requests, CI, work log): <https://github.com/Jowharah/DC-Guardian>. `SystemCode/` is a snapshot of that repository's `main` branch at commit `0ae403e`.
 - Datasets and licences: [SystemCode/docs/DATASETS_AND_CITATIONS.md](SystemCode/docs/DATASETS_AND_CITATIONS.md). Academic, non-commercial use; PPE models trained on SH17 (CC BY-NC-SA 4.0).

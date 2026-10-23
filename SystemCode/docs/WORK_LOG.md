@@ -6,6 +6,64 @@ Conventions: commit hashes are in the history of `main` (PR #2 used a merge comm
 
 ---
 
+## 2026-10-23 — Installation guide and setup fixes from a laptop installation test
+
+- **Why:** the operator installed DC-GUARDIAN on a separate laptop by following the guide (Windows 11, 7.4 GB RAM, no NVIDIA GPU, no OpenAI key, clone at `77a2704`). Setup finished all 8 steps, the app started and sign-in worked; `check_all.py` 12 passed, 0 failed, 2 skipped (GPU environments). Timing: prerequisites 15–20 min, `setup.ps1` 15.4 min (some packages cached), checks 5.4 min.
+- **Main finding (guide fixed; code unchanged, operator decision):** without an OpenAI key, the Decisions for SSH events and for drive + room-temperature pairs are not made. Their v1 rules (`decision/rules.py`) take the grounded specialist's assessment as input, so `operational_decision.py` and the SSH pipeline return 503 / PARTIAL without a specialist. Groups and single PPE, face, drive and sensor results (DCG-DECISION-v2) need no key. The guide had called the key optional for everything and promised the pair's Decision in the tour.
+  - Guide: section 1 says what needs the key; tour step 2 and section 7.3 say the pair's Decision comes from its specialist evaluation; section 9 says the checks never call OpenAI and so cannot show these Decisions; Troubleshooting has the "no Decision / 503" case.
+  - Changing the Decision path to run without a specialist would be a new rule version; left as future work.
+- **Other guide fixes:** reopen PowerShell after installing prerequisites, with a version check; "16 GB recommended (8 GB works for the demo)"; the Neo4j instance name is free and the user is always `neo4j`; the login is `DCG_LOCAL_USER` from `.env` (default `operator`); `py -3.12 -m venv` in the manual steps; harmless setup messages (demo loader specialist warning, npm esbuild, Hugging Face, pip resume) listed as expected.
+- **`setup.ps1`:** optional `-NeoPassword` and `-DashboardPassword` for unattended runs (prompts remain the default); the closing message prints the real `DCG_LOCAL_USER`; the model size is shown in decimal MB (318 MB, as in the guide; it printed 303, i.e. MiB).
+- **Verified:** PowerShell parser 0 errors on `setup.ps1`; the login lookup tested with a set user, no user line and an empty value (falls back to `operator`). The guide PDF and its code-version label are regenerated in the final submission refresh.
+
+---
+
+## 2026-10-23 — Docs review before submission
+
+- **Reviewed:** all 28 files in `docs/`. None removed: the two historical documents (Project Development History, pre-dashboard Security Assessment) are linked from the READMEs and already labelled historical; no broken links.
+- **Updated:**
+  - Index: start with the installation guide; study findings linked.
+  - Roadmap: status at submission, the dropped labelling round, future work in one place.
+  - Validation: latest full check, dependency pins, fresh-install checks.
+  - Testing: browser-test suite.
+  - Datasets: 13 approved knowledge documents; 2 candidates and the planned policy are listed but not used. This corrects the "sixteenth source" wording.
+  - Response architecture: chunk count after the pypdf update.
+  - Usability kit: sessions completed.
+  - Development history: marked as a 2026-10-11 snapshot.
+- **Verified:** `check_all.py` on `main` with the graph fix: 14 passed, 0 failed, 0 skipped (backend 420, browser 24).
+
+---
+
+## 2026-10-23 — Group graph: infrastructure linked to its zone; readable layout
+
+- **Why:** operator review. In a group's graph the servers and cameras had no link to their zone, and the relationship labels were hidden under the boxes.
+- **Backend** (`unified_graph.py`): from the infrastructure the group's events point at (server, camera, sensor, asset, equipment), the group graph now follows the existing topology links (LOCATED_IN, HOSTED_BY, MONITORS) to the group's own zone.
+  - Bounded to 3 hops and 40 paths; read-only; no inferred edges.
+  - Example: ZONE-A ← RACK-A1 ← SRV-A1-02, and ZONE-A ← CAM-A-01.
+- **Frontend** (`GraphViewer.tsx`):
+  - Layered layout by hop distance from the zone; nodes not linked to the zone follow by type.
+  - 270 px between columns; the canvas widens and scrolls sideways rather than overlapping.
+  - Lines are drawn first, then nodes, then relationship labels on top.
+- **Recognized face to person:** dashboard face uploads (`image_evidence_mapping.py`) were written with only OBSERVED_BY. A recognized face now also links to the existing Person with IDENTIFIES, as the face Common Event ingestion does; a Person is never created.
+  - The group graph includes IDENTIFIES.
+  - The two recognized face images already in the local graph were linked once by a one-off script applying the same rule.
+  - Example: Face Identification → IDENTIFIES → P005. P005 is authorized only for ZONE-B, so the graph shows no AUTHORIZED_FOR edge to ZONE-A; that is why the face result is UNAUTHORIZED.
+- **Labels:** relationship labels that would overlap where edges cross are nudged apart.
+- **Tests:** a new backend test checks that only the topology relationship types are followed, that the query is bounded, and which nodes and edges are added. Backend tests 418 passed; browser tests 24 passed.
+
+---
+
+## 2026-10-23 — Installation and User Guide: new screens
+
+- Sections 6 (tour) and 8 (screens) describe the dashboard after the usability-study changes.
+  - Domain counts; the help panel; date, zone and severity filters.
+  - At a glance; Simple view and Full detail; Verdict saved.
+  - Review Queue tabs and tags; the custom period and Review progress in Analytics; the "Who says what" note.
+- The rules list now says severity never comes from the AI.
+- Docs only.
+
+---
+
 ## 2026-10-23 — Study quick wins: summaries, help, simple view, review progress, graph
 
 - **What (display only):**
