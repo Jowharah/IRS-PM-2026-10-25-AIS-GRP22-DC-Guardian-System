@@ -91,7 +91,7 @@ Setup loads demo data, so the dashboard shows results straight away. Use **Scena
 
 ## SECTION 6 : PROJECT REPORT / PAPER
 
-[ProjectReport/](ProjectReport/): group report (business case and market research, system design, implementation, experiments, findings and discussion). Also there: the [project proposal](ProjectReport/DC-Guardian_Project_Proposal_Group22.pdf) and the [installation and user guide](ProjectReport/DC-Guardian_Installation_and_User_Guide.pdf) as PDFs. The report's appendices are the project proposal, the mapping of system functions to MR / RS / CGS course techniques, and the installation and user guide.
+[ProjectReport/](ProjectReport/): the [group report](ProjectReport/DC-Guardian_Final_Report_Group22.pdf) (business case and market research, system design, implementation, experiments, findings and discussion). Also there: the [project proposal](ProjectReport/DC-Guardian_Project_Proposal_Group22.pdf) and the [installation and user guide](ProjectReport/DC-Guardian_Installation_and_User_Guide.pdf) as PDFs. The report's appendices are the project proposal, the mapping of system functions to MR / RS / CGS course techniques, the installation and user guide, the individual project reports, the generative AI use disclosure, and the references.
 
 **Technique groups demonstrated (three or more required):**
 
